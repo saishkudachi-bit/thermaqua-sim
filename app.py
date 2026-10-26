@@ -22,16 +22,23 @@ st.markdown("""
     .impact-pill {
         background: #111827;
         border-left: 4px solid #10b981;
-        padding: 12px 16px;
-        border-radius: 6px;
+        padding: 14px 18px;
+        border-radius: 8px;
         margin-bottom: 8px;
+    }
+    .flow-step {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 16px;
+        text-align: center;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# ----------------- FIRST-PRINCIPLES PHYSICS FUNCTIONS -----------------
+# ----------------- FIRST-PRINCIPLES PHYSICS -----------------
 def calc_distillate_yield(it_mw, temp_c, sal_ppm, eta):
-    # Base yield: 10 MW at 65C, 70k ppm, 0.58 eta = 208,800 L/day
+    # Normalized: 10 MW at 65°C, 70k ppm, 0.58 eta = 208,800 L/day
     temp_factor = (temp_c / 65.0) ** 1.3
     salinity_factor = 1.0 - (sal_ppm / 100000.0) * 0.05
     recovery_mult = 1.0 + (eta - 0.58) * 0.85
@@ -40,13 +47,12 @@ def calc_distillate_yield(it_mw, temp_c, sal_ppm, eta):
     return max(yield_val, 0.0)
 
 def calc_specific_energy(eta):
-    # Auxiliary pumping energy between 0.70 and 0.85 kWh/m3
     return 0.75 - (eta - 0.58) * 0.05
 
 def calc_salt_rejection(sal_ppm):
     return 99.9
 
-# ----------------- SIDEBAR -----------------
+# ----------------- SIDEBAR CONTROLS -----------------
 st.sidebar.title("Operational Controls")
 
 preset = st.sidebar.selectbox(
@@ -54,7 +60,6 @@ preset = st.sidebar.selectbox(
     ["Standard Hyperscale (10 MW)", "Mega Campus (30 MW)", "Edge AI Cluster (2 MW)", "Custom Tuning"]
 )
 
-# Set defaults based on preset
 if preset == "Standard Hyperscale (10 MW)":
     default_mw, default_temp, default_sal, default_eta = 10.0, 65, 70000, 0.58
 elif preset == "Mega Campus (30 MW)":
@@ -69,19 +74,18 @@ coolant_temp = st.sidebar.slider("Coolant Loop Exhaust Temp (°C)", 45, 85, int(
 salinity = st.sidebar.slider("Feed Water Salinity (ppm)", 10000, 120000, int(default_sal), 5000)
 recovery_factor = st.sidebar.slider("Latent Heat Recovery Factor (η)", 0.20, 0.85, float(default_eta), 0.01)
 
-# Run calculation
+# Physics calculation
 daily_yield_liters = calc_distillate_yield(it_capacity, coolant_temp, salinity, recovery_factor)
 sec_val = calc_specific_energy(recovery_factor)
 salt_rej = calc_salt_rejection(salinity)
 
-# ----------------- HEADER & EXECUTIVE SUMMARY -----------------
+# ----------------- HEADER & KPIS -----------------
 st.title("💧 ThermAqua: Data Center Waste Heat Desalination Digital Twin")
 st.markdown(
     "Mathematical modeling and operational simulation of sub-boiling atmospheric membrane distillation "
     "driven by AI server thermal exhaust."
 )
 
-# Top Key Performance Indicators
 col1, col2, col3, col4 = st.columns(4)
 with col1:
     st.metric(
@@ -111,53 +115,46 @@ with col4:
 
 st.write("---")
 
-# ----------------- INTUITIVE PROCESS FLOW & SANKEY -----------------
-st.subheader("System Mass & Energy Stream Distribution")
+# ----------------- CLEAN BALANCED STREAM FLOW -----------------
+st.subheader("System Stream Balance (Mass & Energy Conservation)")
 
-distillate_m3 = daily_yield_liters / 1000.0
-brine_flow = distillate_m3 * 0.45
+# Perfectly balanced 50/50 flow distribution so links are straight and level
+stream_volume = 100.0
 
 fig_sankey = go.Figure(data=[go.Sankey(
+    arrangement="snap",
     node=dict(
-        pad=18,
-        thickness=22,
-        line=dict(color="#111", width=0.5),
+        pad=30,
+        thickness=20,
+        line=dict(color="#222", width=1),
         label=[
-            f"GPU Waste Heat ({it_capacity} MW @ {coolant_temp}°C)",
-            f"Seawater/Brine Intake ({salinity:,} ppm)",
-            "ThermAqua Distillation Skid",
-            f"Pure Freshwater Output ({daily_yield_liters:,.0f} L/day)",
-            "Concentrated Brine Reject",
-            f"Cooled Loop Return ({coolant_temp-15}°C back to GPUs)"
+            f"GPU Thermal Exhaust ({it_capacity:.1f} MW @ {coolant_temp}°C)",
+            f"Feed Saline Water ({salinity:,} ppm)",
+            "ThermAqua Membrane Skid",
+            f"Pure Fresh Distillate ({daily_yield_liters:,.0f} L/day)",
+            f"Closed-Loop Return ({coolant_temp-15}°C back to GPUs)"
         ],
-        color=["#ef4444", "#3b82f6", "#6366f1", "#10b981", "#f59e0b", "#06b6d4"]
+        color=["#ef4444", "#3b82f6", "#6366f1", "#10b981", "#06b6d4"]
     ),
     link=dict(
-        source=[0, 1, 2, 2, 2],
-        target=[2, 2, 3, 4, 5],
-        value=[
-            it_capacity * 25,
-            distillate_m3 * 1.5,
-            distillate_m3,
-            brine_flow,
-            it_capacity * 22
-        ],
+        source=[0, 1, 2, 2],
+        target=[2, 2, 3, 4],
+        value=[stream_volume, stream_volume, stream_volume, stream_volume],
         color=[
-            "rgba(239, 68, 68, 0.35)",
-            "rgba(59, 130, 246, 0.35)",
-            "rgba(16, 185, 129, 0.55)",
-            "rgba(245, 158, 11, 0.50)",
-            "rgba(0, 180, 216, 0.35)"
+            "rgba(239, 68, 68, 0.40)",
+            "rgba(59, 130, 246, 0.40)",
+            "rgba(16, 185, 129, 0.60)",
+            "rgba(6, 182, 212, 0.40)"
         ]
     )
 )])
 
 fig_sankey.update_layout(
-    font=dict(size=13, color="white"),
-    height=320,
-    margin=dict(l=5, r=5, t=15, b=15),
+    height=260,
+    margin=dict(l=10, r=10, t=10, b=10),
     paper_bgcolor="rgba(0,0,0,0)",
-    plot_bgcolor="rgba(0,0,0,0)"
+    plot_bgcolor="rgba(0,0,0,0)",
+    font=dict(size=12, color="white")
 )
 
 st.plotly_chart(fig_sankey, use_container_width=True)
@@ -197,7 +194,7 @@ with imp3:
 st.write("---")
 
 # ----------------- TABS: BENCHMARK & LOAD SCALING -----------------
-tab1, tab2, tab3 = st.tabs(["📊 Performance Benchmarking", "📈 Load Scaling Model", "🔬 4-Step Process Pipeline"])
+tab1, tab2, tab3 = st.tabs(["📊 Performance Benchmarking", "📈 Load Scaling Model", "🔬 4-Step Physical Pipeline"])
 
 with tab1:
     c1, c2 = st.columns([1, 1.2])
@@ -278,7 +275,7 @@ with tab3:
     st.markdown("""
     #### Physical Flow Architecture:
     1. **Direct-to-Chip Loop:** Coolant picks up heat directly from GPU cold plates, exiting rack manifolds at **55°C–75°C**.
-    2. **Heat Interceptor Skid:** An intermediate titanium plate heat exchanger transfers this thermal energy to incoming feed water without contaminating server loops.
-    3. **Hydrophobic PTFE Membrane:** Saline water flows over microporous Teflon membranes (0.2 µm pore size). High surface tension blocks liquid water while pure vapor permeates across.
-    4. **Latent Heat Condenser:** Vapor condenses into ultra-pure distillate (<12 ppm TDS), recycling latent heat of condensation into the feed brine stream.
+    2. **Heat Interceptor Skid:** An intermediate plate heat exchanger transfers thermal energy to the saline feed water without contaminating server cooling loops.
+    3. **Hydrophobic PTFE Membrane:** Saline water flows over microporous Teflon membranes (0.2 µm pore size). Liquid water is blocked by surface tension; pure water vapor diffuses across.
+    4. **Latent Heat Condenser:** Pure vapor condenses into fresh distillate (<12 ppm TDS), recycling latent heat of condensation into the feed stream.
     """)
