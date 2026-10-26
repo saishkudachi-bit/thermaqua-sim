@@ -11,30 +11,104 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ----------------- APPLE LIQUID GLASS & ACTIVE FLUID BACKGROUND -----------------
+# ----------------- WATERY CURSOR & ACTIVE FLUID SIMULATION CSS -----------------
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap');
 
-    /* Dynamic Liquid Fluid Background */
-    @keyframes liquidMotion {
-        0% { background-position: 0% 40%; }
-        50% { background-position: 100% 60%; }
-        100% { background-position: 0% 40%; }
+    /* 1. Custom Interactive Watery Drop Cursor */
+    html, body, .stApp {
+        cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='34' viewBox='0 0 28 34'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23e0f2fe'/><stop offset='40%25' stop-color='%2338bdf8'/><stop offset='80%25' stop-color='%230284c7'/><stop offset='100%25' stop-color='%230369a1'/></linearGradient><filter id='glow' x='-30%25' y='-30%25' width='160%25' height='160%25'><feDropShadow dx='0' dy='2' stdDeviation='2.5' flood-color='%2300f2fe' flood-opacity='0.8'/></filter></defs><path d='M14 2 C14 2 4 14 4 21 C4 26.5 8.5 31 14 31 C19.5 31 24 26.5 24 21 C24 14 14 2 14 2 Z' fill='url(%23g)' stroke='%23ffffff' stroke-width='1.5' filter='url(%23glow)'/><ellipse cx='10.5' cy='18' rx='3' ry='5' fill='%23ffffff' opacity='0.65' transform='rotate(-24 10.5 18)'/></svg>") 14 2, auto !important;
+    }
+
+    /* Interactive Ripple Cursor on Clickable / Hoverable Items */
+    button, [role="button"], input, select, .apple-glass, .apple-pill-card, [data-baseweb="slider"], a {
+        cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'><defs><filter id='rglow'><feDropShadow dx='0' dy='0' stdDeviation='2.5' flood-color='%2338bdf8' flood-opacity='0.95'/></filter></defs><circle cx='18' cy='18' r='14' fill='rgba(14, 165, 233, 0.22)' stroke='%2338bdf8' stroke-width='1.8' stroke-dasharray='4 2' filter='url(%23rglow)'/><circle cx='18' cy='18' r='7.5' fill='none' stroke='%237dd3fc' stroke-width='1.4'/><circle cx='18' cy='18' r='3.5' fill='%23ffffff'/></svg>") 18 18, pointer !important;
+    }
+
+    /* 2. Continuously Moving Deep Ocean Mesh */
+    @keyframes oceanicCurrents {
+        0% { background-position: 0% 0%; }
+        50% { background-position: 100% 100%; }
+        100% { background-position: 0% 0%; }
     }
 
     .stApp {
-        background: radial-gradient(circle at 15% 20%, rgba(14, 116, 144, 0.45), transparent 45%),
-                    radial-gradient(circle at 85% 80%, rgba(2, 132, 199, 0.35), transparent 50%),
-                    radial-gradient(circle at 50% 50%, rgba(3, 105, 161, 0.25), transparent 60%),
-                    linear-gradient(135deg, #020617 0%, #031326 35%, #051d36 70%, #020b18 100%) !important;
-        background-size: 220% 220% !important;
-        animation: liquidMotion 18s ease infinite !important;
+        background: radial-gradient(circle at 20% 30%, rgba(14, 116, 144, 0.40) 0%, transparent 55%),
+                    radial-gradient(circle at 80% 70%, rgba(2, 132, 199, 0.35) 0%, transparent 60%),
+                    radial-gradient(circle at 50% 50%, rgba(3, 105, 161, 0.20) 0%, transparent 50%),
+                    linear-gradient(135deg, #010814 0%, #031527 35%, #062640 70%, #020e1c 100%) !important;
+        background-size: 260% 260% !important;
+        animation: oceanicCurrents 20s ease-in-out infinite !important;
         color: #f8fafc;
         font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+        overflow-x: hidden;
     }
 
-    /* Apple Liquid Glass Container */
+    /* 3. Live Undulating Wave Canvas Layers */
+    @keyframes waveRoll1 {
+        0% { transform: translateX(0) translateZ(0) scaleY(1); }
+        50% { transform: translateX(-25%) translateZ(0) scaleY(1.15); }
+        100% { transform: translateX(-50%) translateZ(0) scaleY(1); }
+    }
+    @keyframes waveRoll2 {
+        0% { transform: translateX(-50%) translateZ(0) scaleY(0.9); }
+        50% { transform: translateX(-25%) translateZ(0) scaleY(1.1); }
+        100% { transform: translateX(0) translateZ(0) scaleY(0.9); }
+    }
+    @keyframes causticShift {
+        0% { opacity: 0.15; transform: scale(1) rotate(0deg); }
+        50% { opacity: 0.32; transform: scale(1.15) rotate(180deg); }
+        100% { opacity: 0.15; transform: scale(1) rotate(360deg); }
+    }
+
+    .water-bg-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+    }
+
+    .caustic-water {
+        position: absolute;
+        width: 200%;
+        height: 200%;
+        top: -50%;
+        left: -50%;
+        background-image: radial-gradient(circle, rgba(56, 189, 248, 0.12) 2px, transparent 40px),
+                          radial-gradient(circle, rgba(14, 165, 233, 0.10) 3px, transparent 50px);
+        background-size: 90px 90px, 130px 130px;
+        animation: causticShift 30s linear infinite;
+    }
+
+    .wave-strip {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 300%;
+        height: 180px;
+        background-repeat: repeat-x;
+    }
+
+    .wave-back {
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0 C150,90 350,-40 500,45 C650,130 900,10 1200,50 L1200,120 L0,120 Z" fill="rgba(6,78,119,0.22)"/></svg>');
+        background-size: 1200px 120px;
+        animation: waveRoll1 24s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+        opacity: 0.85;
+    }
+
+    .wave-front {
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,20 C200,80 400,-10 600,60 C800,130 1000,20 1200,40 L1200,120 L0,120 Z" fill="rgba(14,165,233,0.18)"/></svg>');
+        background-size: 1200px 120px;
+        animation: waveRoll2 16s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+        opacity: 0.95;
+    }
+
+    /* 4. Apple Liquid Glass UI Elements */
     .apple-glass {
         background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(28px) saturate(190%);
@@ -48,6 +122,7 @@ st.markdown("""
                     inset 0 -1px 1px 0 rgba(0, 0, 0, 0.3);
         transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         position: relative;
+        z-index: 1;
         overflow: hidden;
     }
 
@@ -55,11 +130,10 @@ st.markdown("""
         transform: translateY(-4px) scale(1.008);
         border-color: rgba(56, 189, 248, 0.35);
         border-top-color: rgba(255, 255, 255, 0.55);
-        box-shadow: 0 24px 50px -10px rgba(14, 165, 233, 0.28),
+        box-shadow: 0 24px 50px -10px rgba(14, 165, 233, 0.30),
                     inset 0 1px 2px 0 rgba(255, 255, 255, 0.35);
     }
 
-    /* Liquid Glass Typography */
     .glass-label {
         font-size: 11px;
         font-weight: 600;
@@ -100,7 +174,6 @@ st.markdown("""
         color: #6ee7b7;
     }
 
-    /* Apple-style Infographic Pill Cards */
     .apple-pill-card {
         background: rgba(15, 23, 42, 0.45);
         backdrop-filter: blur(24px) saturate(180%);
@@ -111,6 +184,8 @@ st.markdown("""
         text-align: center;
         box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4);
         transition: transform 0.3s ease;
+        position: relative;
+        z-index: 1;
     }
     .apple-pill-card:hover {
         transform: translateY(-3px);
@@ -123,6 +198,13 @@ st.markdown("""
         border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
     }
 </style>
+
+<!-- Live Moving Water Background Injector -->
+<div class="water-bg-container">
+    <div class="caustic-water"></div>
+    <div class="wave-strip wave-back"></div>
+    <div class="wave-strip wave-front"></div>
+</div>
 """, unsafe_allow_html=True)
 
 # ----------------- FIRST-PRINCIPLES PHYSICS -----------------
@@ -138,8 +220,6 @@ def calc_specific_energy(eta):
     return 0.75 - (eta - 0.58) * 0.05
 
 def calc_avoided_fuel_cost(it_mw, temp_c):
-    # Calculates equivalent thermal fuel cost if this energy was purchased via industrial natural gas boilers
-    # Benchmark: $48.50 per MWh_thermal (at 85% boiler efficiency) scaled by thermodynamic temperature grade
     annual_thermal_mwh = it_mw * 24.0 * 365.0
     temp_grade_exergy = (temp_c / 65.0) ** 1.15
     avoided_cost_usd = annual_thermal_mwh * 48.50 * temp_grade_exergy
@@ -262,7 +342,7 @@ fig_dual.add_trace(
     secondary_y=True
 )
 
-# Interactive Pulsing Operating Point Marker
+# Interactive Operating Point Marker
 fig_dual.add_trace(
     go.Scatter(
         x=[it_capacity],
