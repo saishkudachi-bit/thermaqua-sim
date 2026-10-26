@@ -6,80 +6,148 @@ import numpy as np
 # Page configuration
 st.set_page_config(
     page_title="ThermAqua | AI Thermal Desalination Twin",
-    page_icon="🌊",
+    page_icon="💧",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# ----------------- COZY WATERY GLASSMORPHIC CSS -----------------
+# ----------------- APPLE LIQUID GLASS & ACTIVE FLUID BACKGROUND -----------------
 st.markdown("""
 <style>
-    /* Animated Water Gradient Background */
-    @keyframes oceanicFlow {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
+    @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap');
+
+    /* Dynamic Liquid Fluid Background */
+    @keyframes liquidMotion {
+        0% { background-position: 0% 40%; }
+        50% { background-position: 100% 60%; }
+        100% { background-position: 0% 40%; }
     }
-    
+
+    @keyframes orbDrift1 {
+        0%, 100% { transform: translate(0px, 0px) scale(1); }
+        50% { transform: translate(90px, 45px) scale(1.18); }
+    }
+
+    @keyframes orbDrift2 {
+        0%, 100% { transform: translate(0px, 0px) scale(1); }
+        50% { transform: translate(-80px, -50px) scale(1.12); }
+    }
+
     .stApp {
-        background: linear-gradient(-45deg, #020b14, #051c2c, #072e44, #031422, #020912) !important;
-        background-size: 400% 400% !important;
-        animation: oceanicFlow 22s ease infinite !important;
-        color: #f1f5f9;
-        font-family: 'Inter', -apple-system, sans-serif;
+        background: radial-gradient(circle at 15% 20%, rgba(14, 116, 144, 0.45), transparent 45%),
+                    radial-gradient(circle at 85% 80%, rgba(2, 132, 199, 0.35), transparent 50%),
+                    radial-gradient(circle at 50% 50%, rgba(3, 105, 161, 0.25), transparent 60%),
+                    linear-gradient(135deg, #020617 0%, #031326 35%, #051d36 70%, #020b18 100%) !important;
+        background-size: 220% 220% !important;
+        animation: liquidMotion 18s ease infinite !important;
+        color: #f8fafc;
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
     }
 
-    /* Frosted Glass Container */
-    .glass-card {
-        background: rgba(15, 23, 42, 0.55);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        border: 1px solid rgba(56, 189, 248, 0.18);
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        transition: transform 0.25s ease, border-color 0.25s ease;
-    }
-    .glass-card:hover {
-        transform: translateY(-3px);
-        border-color: rgba(56, 189, 248, 0.4);
+    /* Apple Liquid Glass Container */
+    .apple-glass {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(28px) saturate(190%);
+        -webkit-backdrop-filter: blur(28px) saturate(190%);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-top: 1px solid rgba(255, 255, 255, 0.38);
+        border-radius: 22px;
+        padding: 22px 20px;
+        box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.5), 
+                    inset 0 1px 1px 0 rgba(255, 255, 255, 0.2),
+                    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.3);
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
     }
 
-    /* KPI Header Text */
-    .glass-title {
-        color: #94a3b8;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 1.2px;
+    .apple-glass::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+        transition: 0.6s;
+        pointer-events: none;
+    }
+
+    .apple-glass:hover {
+        transform: translateY(-4px) scale(1.008);
+        border-color: rgba(56, 189, 248, 0.35);
+        border-top-color: rgba(255, 255, 255, 0.55);
+        box-shadow: 0 24px 50px -10px rgba(14, 165, 233, 0.28),
+                    inset 0 1px 2px 0 rgba(255, 255, 255, 0.35);
+    }
+
+    .apple-glass:hover::before {
+        left: 100%;
+    }
+
+    /* Liquid Glass Typography */
+    .glass-label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 1.4px;
         text-transform: uppercase;
+        color: #94a3b8;
+        margin-bottom: 4px;
     }
-    .glass-val {
-        font-size: 32px;
-        font-weight: 800;
+
+    .glass-val-liquid {
+        font-size: 33px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
         margin: 6px 0;
-        background: linear-gradient(90deg, #38bdf8, #818cf8);
+        background: linear-gradient(180deg, #ffffff 15%, #bae6fd 85%, #38bdf8 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
-    .glass-pill {
-        font-size: 11px;
-        font-weight: 600;
-        padding: 4px 10px;
-        border-radius: 20px;
-        display: inline-block;
-    }
-    .pill-cyan { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
-    .pill-green { background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
 
-    /* Infographic Glass Tiles */
-    .impact-glass {
-        background: rgba(8, 20, 36, 0.65);
+    .glass-badge-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        font-size: 11.5px;
+        font-weight: 500;
         backdrop-filter: blur(12px);
-        border: 1px solid rgba(56, 189, 248, 0.15);
-        border-radius: 14px;
-        padding: 18px;
+    }
+    .badge-cyan {
+        background: rgba(14, 165, 233, 0.16);
+        border: 1px solid rgba(56, 189, 248, 0.32);
+        color: #7dd3fc;
+    }
+    .badge-green {
+        background: rgba(16, 185, 129, 0.16);
+        border: 1px solid rgba(52, 211, 153, 0.32);
+        color: #6ee7b7;
+    }
+
+    /* Apple-style Infographic Pill Cards */
+    .apple-pill-card {
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(24px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        border-top: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 18px;
+        padding: 20px 16px;
         text-align: center;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4);
+        transition: transform 0.3s ease;
+    }
+    .apple-pill-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    /* Streamlit Widget polish */
+    div[data-testid="stSidebar"] {
+        background: rgba(3, 10, 20, 0.72) !important;
+        backdrop-filter: blur(30px) saturate(180%) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -97,11 +165,11 @@ def calc_specific_energy(eta):
     return 0.75 - (eta - 0.58) * 0.05
 
 # ----------------- SIDEBAR CONTROLS -----------------
-st.sidebar.markdown("### 🌊 Simulation Matrix")
+st.sidebar.markdown("### 🎛️ Architecture Presets")
 
 preset = st.sidebar.selectbox(
-    "Architecture Presets",
-    ["Standard Hyperscale (10 MW)", "Mega AI Campus (30 MW)", "Edge Node (2 MW)", "Custom Tuning"]
+    "Select Configuration",
+    ["Standard Hyperscale (10 MW)", "Mega AI Campus (30 MW)", "Edge Node (2 MW)", "Manual Custom Tuning"]
 )
 
 if preset == "Standard Hyperscale (10 MW)":
@@ -113,184 +181,201 @@ elif preset == "Edge Node (2 MW)":
 else:
     default_mw, default_temp, default_sal, default_eta = 10.0, 65, 70000, 0.58
 
-it_capacity = st.sidebar.slider("🔥 Server Heat Output (MW)", 1.0, 50.0, float(default_mw), 0.5)
-coolant_temp = st.sidebar.slider("🌡️ GPU Coolant Loop (°C)", 45, 85, int(default_temp), 1)
-salinity = st.sidebar.slider("🧂 Feed Salinity (ppm)", 10000, 120000, int(default_sal), 5000)
-recovery_factor = st.sidebar.slider("♻️ Latent Heat Recovery (η)", 0.20, 0.85, float(default_eta), 0.01)
+st.sidebar.markdown("---")
+st.sidebar.markdown("### ⚙️ Operating Parameters")
+it_capacity = st.sidebar.slider("IT Thermal Capacity (MW)", 1.0, 50.0, float(default_mw), 0.5)
+coolant_temp = st.sidebar.slider("Coolant Loop Exhaust Temp (°C)", 45, 85, int(default_temp), 1)
+salinity = st.sidebar.slider("Feed Water Salinity (ppm)", 10000, 120000, int(default_sal), 5000)
+recovery_factor = st.sidebar.slider("Latent Heat Recovery Factor (η)", 0.20, 0.85, float(default_eta), 0.01)
 
-# Physics calculations
+# Real-time calculations
 daily_yield_liters = calc_distillate_yield(it_capacity, coolant_temp, salinity, recovery_factor)
 sec_val = calc_specific_energy(recovery_factor)
-daily_thermal_mwh = it_capacity * 24.0  # Daily MWh thermal energy dissipated
+daily_thermal_mwh = it_capacity * 24.0
 
-# Human impact metrics
+# Human-readable equivalents
 people_supplied = int(daily_yield_liters / 2.5)
 bottles_per_min = int(daily_yield_liters / (24 * 60 * 0.5))
 pools_per_year = (daily_yield_liters * 365) / 2_500_000
 water_savings_usd = (daily_yield_liters * 365 / 1000) * 2.80
 
-# ----------------- MAIN TITLE & HERO KPI CARDS -----------------
-st.markdown("<h1 style='text-align: center; margin-bottom: 2px;'>💧 ThermAqua Digital Twin</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #7dd3fc; font-size: 16px; margin-bottom: 28px;'>Atmospheric Sub-Boiling Desalination Driven by AI Server Thermal Exhaust</p>", unsafe_allow_html=True)
+# ----------------- MAIN LIQUID GLASS INTERFACE -----------------
+st.markdown("<h1 style='text-align: center; font-weight: 700; letter-spacing: -1px; margin-bottom: 2px;'>💧 ThermAqua Digital Twin</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #7dd3fc; font-size: 16px; margin-bottom: 28px;'>Sub-Boiling Atmospheric Membrane Desalination Driven by AI Server Thermal Exhaust</p>", unsafe_allow_html=True)
 
+# 4 Liquid Glass Telemetry Cards
 k1, k2, k3, k4 = st.columns(4)
 
 with k1:
     st.markdown(f"""
-    <div class="glass-card">
-        <div class="glass-title">Daily Distillate Yield</div>
-        <div class="glass-val">{daily_yield_liters:,.0f} L</div>
-        <span class="glass-pill pill-cyan">🌊 {daily_yield_liters/1000:,.1f} m³ / day</span>
+    <div class="apple-glass">
+        <div class="glass-label">Daily Distillate Yield</div>
+        <div class="glass-val-liquid">{daily_yield_liters:,.0f} L</div>
+        <div class="glass-badge-pill badge-cyan">🌊 {daily_yield_liters/1000:,.1f} m³ / day</div>
     </div>
     """, unsafe_allow_html=True)
 
 with k2:
     st.markdown(f"""
-    <div class="glass-card">
-        <div class="glass-title">Thermal Fuel Cost</div>
-        <div class="glass-val" style="background: linear-gradient(90deg, #34d399, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">$0</div>
-        <span class="glass-pill pill-green">🌱 100% Upcycled Heat</span>
+    <div class="apple-glass">
+        <div class="glass-label">Primary Thermal Fuel Cost</div>
+        <div class="glass-val-liquid" style="background: linear-gradient(180deg, #ffffff 15%, #86efac 85%, #22c55e 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">$0</div>
+        <div class="glass-badge-pill badge-green">🌱 100% Upcycled Heat</div>
     </div>
     """, unsafe_allow_html=True)
 
 with k3:
     st.markdown(f"""
-    <div class="glass-card">
-        <div class="glass-title">Auxiliary Electricity</div>
-        <div class="glass-val">{sec_val:.2f}</div>
-        <span class="glass-pill pill-cyan">⚡ kWh/m³ (Pumps Only)</span>
+    <div class="apple-glass">
+        <div class="glass-label">Specific Electric Demand</div>
+        <div class="glass-val-liquid">{sec_val:.2f}</div>
+        <div class="glass-badge-pill badge-cyan">⚡ kWh/m³ (Pumps Only)</div>
     </div>
     """, unsafe_allow_html=True)
 
 with k4:
     st.markdown(f"""
-    <div class="glass-card">
-        <div class="glass-title">Permeate Purity</div>
-        <div class="glass-val" style="background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">99.9%</div>
-        <span class="glass-pill pill-green">✨ &lt; 12 ppm TDS</span>
+    <div class="apple-glass">
+        <div class="glass-label">Permeate Purity</div>
+        <div class="glass-val-liquid">99.9%</div>
+        <div class="glass-badge-pill badge-green">✨ &lt; 12 ppm TDS</div>
     </div>
     """, unsafe_allow_html=True)
 
 st.write("")
 
-# ----------------- NEW DUAL-AXIS HEAT VS WATER CONVERSION GRAPH -----------------
-st.markdown("### 🔄 Heat-to-Water Direct Conversion Trajectory")
-st.markdown("<span style='color: #94a3b8; font-size: 14px;'>Visualizes how dissipated GPU thermal megawatt-hours are converted directly into clean water volume without burning fossil fuels.</span>", unsafe_allow_html=True)
+# ----------------- DUAL-AXIS HEAT-TO-WATER CONVERSION DYNAMICS -----------------
+st.markdown("### 🔄 Energy Dissipation & Clean Water Generation Trajectory")
+st.markdown("<p style='color: #94a3b8; font-size: 14px; margin-top: -8px;'>Directly correlates GPU server heat dissipated (MWh/day) with distilled water production across cluster capacity.</p>", unsafe_allow_html=True)
 
-mw_axis = np.linspace(1, 50, 50)
+mw_axis = np.linspace(1, 50, 60)
 water_axis = [calc_distillate_yield(mw, coolant_temp, salinity, recovery_factor) for mw in mw_axis]
 heat_mwh_axis = mw_axis * 24.0
 
 fig_dual = make_subplots(specs=[[{"secondary_y": True}]])
 
-# Trace 1: Water Yield Area Curve (Left Axis)
+# Water Generation Smooth Spline Area
 fig_dual.add_trace(
     go.Scatter(
         x=mw_axis,
         y=water_axis,
-        name="Clean Water Output (L/day)",
+        name="Freshwater Output (L/day)",
         mode="lines",
-        line=dict(color="#38bdf8", width=3.5),
+        line=dict(color="#38bdf8", width=3.5, shape="spline"),
         fill="tozeroy",
-        fillcolor="rgba(56, 189, 248, 0.12)"
+        fillcolor="rgba(56, 189, 248, 0.10)"
     ),
     secondary_y=False
 )
 
-# Trace 2: Dissipated Heat Energy (Right Axis)
+# Heat Energy Intercepted (Right Axis)
 fig_dual.add_trace(
     go.Scatter(
         x=mw_axis,
         y=heat_mwh_axis,
         name="Thermal Energy Intercepted (MWh/day)",
         mode="lines",
-        line=dict(color="#f97316", width=2.5, dash="dash")
+        line=dict(color="#fb923c", width=2.5, dash="dash", shape="spline")
     ),
     secondary_y=True
 )
 
-# Marker for Current Operating Point
+# Interactive Pulsing Operating Point Marker
 fig_dual.add_trace(
     go.Scatter(
         x=[it_capacity],
         y=[daily_yield_liters],
         mode="markers+text",
-        name="Current Operating Point",
-        marker=dict(color="#34d399", size=14, line=dict(color="white", width=2)),
-        text=[f" 📍 {daily_yield_liters:,.0f} L/day @ {it_capacity:.1f} MW"],
-        textposition="top left",
-        textfont=dict(color="#34d399", size=13, family="Arial Black")
+        name="Active Working Point",
+        marker=dict(
+            color="#34d399",
+            size=15,
+            line=dict(color="#ffffff", width=2.5)
+        ),
+        text=[f"  📍 {daily_yield_liters:,.0f} L/day @ {it_capacity:.1f} MW"],
+        textposition="top center",
+        textfont=dict(color="#6ee7b7", size=13, family="SF Pro Display, Arial Black")
     ),
     secondary_y=False
 )
 
 fig_dual.update_layout(
-    height=380,
+    height=370,
     margin=dict(l=10, r=10, t=30, b=10),
-    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5, font=dict(color="white")),
+    legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=1.02,
+        xanchor="center",
+        x=0.5,
+        font=dict(color="#e2e8f0", size=12)
+    ),
     paper_bgcolor="rgba(0,0,0,0)",
-    plot_bgcolor="rgba(15, 23, 42, 0.4)",
+    plot_bgcolor="rgba(6, 18, 36, 0.45)",
     hovermode="x unified"
 )
 
 fig_dual.update_xaxes(
     title_text="Data Center IT Capacity (MW)",
     color="#94a3b8",
-    gridcolor="rgba(255,255,255,0.06)"
+    gridcolor="rgba(255, 255, 255, 0.05)",
+    showline=False
 )
 fig_dual.update_yaxes(
-    title_text="Distillate Produced (Liters / Day)",
+    title_text="Clean Distillate Produced (Liters / Day)",
     color="#38bdf8",
-    gridcolor="rgba(56, 189, 248, 0.08)",
+    gridcolor="rgba(56, 189, 248, 0.06)",
+    showline=False,
     secondary_y=False
 )
 fig_dual.update_yaxes(
-    title_text="Heat Dissipated (MWh_thermal / Day)",
-    color="#f97316",
-    gridcolor="rgba(249, 115, 22, 0.08)",
+    title_text="Heat Dissipated (MWh / Day)",
+    color="#fb923c",
+    gridcolor="rgba(251, 146, 60, 0.06)",
+    showline=False,
     secondary_y=True
 )
 
 st.plotly_chart(fig_dual, use_container_width=True)
 
-# ----------------- REAL-WORLD IMPACT GLASS TILES -----------------
-st.markdown("### 🌍 Real-World Impact (Translating Liters into Human Scale)")
+# ----------------- REAL-WORLD IMPACT GLASS PILLS -----------------
+st.markdown("### 🌍 Real-World Environmental Equivalency")
 
-i1, i2, i3, i4 = st.columns(4)
+p1, p2, p3, p4 = st.columns(4)
 
-with i1:
+with p1:
     st.markdown(f"""
-    <div class="impact-glass">
-        <div style="font-size: 32px; margin-bottom: 4px;">👥</div>
-        <div style="font-size: 22px; font-weight: 800; color: #38bdf8;">{people_supplied:,}</div>
-        <span style="color: #94a3b8; font-size: 13px;">People Provided Daily Drinking Water</span>
+    <div class="apple-pill-card">
+        <div style="font-size: 30px; margin-bottom: 2px;">👥</div>
+        <div style="font-size: 22px; font-weight: 700; color: #7dd3fc;">{people_supplied:,}</div>
+        <div style="color: #94a3b8; font-size: 12.5px; margin-top: 4px;">People Daily Drinking Water</div>
     </div>
     """, unsafe_allow_html=True)
 
-with i2:
+with p2:
     st.markdown(f"""
-    <div class="impact-glass">
-        <div style="font-size: 32px; margin-bottom: 4px;">🍼</div>
-        <div style="font-size: 22px; font-weight: 800; color: #34d399;">{bottles_per_min:,} / min</div>
-        <span style="color: #94a3b8; font-size: 13px;">500ml Bottled Water Equivalent Rate</span>
+    <div class="apple-pill-card">
+        <div style="font-size: 30px; margin-bottom: 2px;">🍼</div>
+        <div style="font-size: 22px; font-weight: 700; color: #86efac;">{bottles_per_min:,} / min</div>
+        <div style="color: #94a3b8; font-size: 12.5px; margin-top: 4px;">500ml Bottled Water Rate</div>
     </div>
     """, unsafe_allow_html=True)
 
-with i3:
+with p3:
     st.markdown(f"""
-    <div class="impact-glass">
-        <div style="font-size: 32px; margin-bottom: 4px;">🏊‍♂️</div>
-        <div style="font-size: 22px; font-weight: 800; color: #818cf8;">{pools_per_year:.1f} Pools</div>
-        <span style="color: #94a3b8; font-size: 13px;">Olympic Pools Filled Annually</span>
+    <div class="apple-pill-card">
+        <div style="font-size: 30px; margin-bottom: 2px;">🏊‍♂️</div>
+        <div style="font-size: 22px; font-weight: 700; color: #a5b4fc;">{pools_per_year:.1f} Pools</div>
+        <div style="color: #94a3b8; font-size: 12.5px; margin-top: 4px;">Olympic Pools Filled / Year</div>
     </div>
     """, unsafe_allow_html=True)
 
-with i4:
+with p4:
     st.markdown(f"""
-    <div class="impact-glass">
-        <div style="font-size: 32px; margin-bottom: 4px;">💵</div>
-        <div style="font-size: 22px; font-weight: 800; color: #facc15;">${water_savings_usd:,.0f}</div>
-        <span style="color: #94a3b8; font-size: 13px;">Annual Municipal Water Cost Saved</span>
+    <div class="apple-pill-card">
+        <div style="font-size: 30px; margin-bottom: 2px;">💵</div>
+        <div style="font-size: 22px; font-weight: 700; color: #fde047;">${water_savings_usd:,.0f}</div>
+        <div style="color: #94a3b8; font-size: 12.5px; margin-top: 4px;">Annual Utility Bill Saved</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -322,7 +407,7 @@ with b1:
 
 with b2:
     st.markdown(f"""
-    <div class="glass-card" style="height: 90%;">
+    <div class="apple-glass" style="height: 88%;">
         <b style="color: #38bdf8; font-size: 16px;">Core Engineering Advantage:</b>
         <p style="color: #cbd5e1; font-size: 13.5px; line-height: 1.6; margin-top: 8px;">
             • <b>Zero Primary Fuel:</b> Uses <b>{daily_thermal_mwh:.0f} MWh/day</b> of free GPU server exhaust heat instead of gas boilers.<br>
