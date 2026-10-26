@@ -23,16 +23,6 @@ st.markdown("""
         100% { background-position: 0% 40%; }
     }
 
-    @keyframes orbDrift1 {
-        0%, 100% { transform: translate(0px, 0px) scale(1); }
-        50% { transform: translate(90px, 45px) scale(1.18); }
-    }
-
-    @keyframes orbDrift2 {
-        0%, 100% { transform: translate(0px, 0px) scale(1); }
-        50% { transform: translate(-80px, -50px) scale(1.12); }
-    }
-
     .stApp {
         background: radial-gradient(circle at 15% 20%, rgba(14, 116, 144, 0.45), transparent 45%),
                     radial-gradient(circle at 85% 80%, rgba(2, 132, 199, 0.35), transparent 50%),
@@ -61,28 +51,12 @@ st.markdown("""
         overflow: hidden;
     }
 
-    .apple-glass::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
-        transition: 0.6s;
-        pointer-events: none;
-    }
-
     .apple-glass:hover {
         transform: translateY(-4px) scale(1.008);
         border-color: rgba(56, 189, 248, 0.35);
         border-top-color: rgba(255, 255, 255, 0.55);
         box-shadow: 0 24px 50px -10px rgba(14, 165, 233, 0.28),
                     inset 0 1px 2px 0 rgba(255, 255, 255, 0.35);
-    }
-
-    .apple-glass:hover::before {
-        left: 100%;
     }
 
     /* Liquid Glass Typography */
@@ -143,7 +117,6 @@ st.markdown("""
         border-color: rgba(56, 189, 248, 0.3);
     }
 
-    /* Streamlit Widget polish */
     div[data-testid="stSidebar"] {
         background: rgba(3, 10, 20, 0.72) !important;
         backdrop-filter: blur(30px) saturate(180%) !important;
@@ -163,6 +136,14 @@ def calc_distillate_yield(it_mw, temp_c, sal_ppm, eta):
 
 def calc_specific_energy(eta):
     return 0.75 - (eta - 0.58) * 0.05
+
+def calc_avoided_fuel_cost(it_mw, temp_c):
+    # Calculates equivalent thermal fuel cost if this energy was purchased via industrial natural gas boilers
+    # Benchmark: $48.50 per MWh_thermal (at 85% boiler efficiency) scaled by thermodynamic temperature grade
+    annual_thermal_mwh = it_mw * 24.0 * 365.0
+    temp_grade_exergy = (temp_c / 65.0) ** 1.15
+    avoided_cost_usd = annual_thermal_mwh * 48.50 * temp_grade_exergy
+    return avoided_cost_usd
 
 # ----------------- SIDEBAR CONTROLS -----------------
 st.sidebar.markdown("### 🎛️ Architecture Presets")
@@ -191,6 +172,7 @@ recovery_factor = st.sidebar.slider("Latent Heat Recovery Factor (η)", 0.20, 0.
 # Real-time calculations
 daily_yield_liters = calc_distillate_yield(it_capacity, coolant_temp, salinity, recovery_factor)
 sec_val = calc_specific_energy(recovery_factor)
+avoided_fuel_annual = calc_avoided_fuel_cost(it_capacity, coolant_temp)
 daily_thermal_mwh = it_capacity * 24.0
 
 # Human-readable equivalents
@@ -203,7 +185,7 @@ water_savings_usd = (daily_yield_liters * 365 / 1000) * 2.80
 st.markdown("<h1 style='text-align: center; font-weight: 700; letter-spacing: -1px; margin-bottom: 2px;'>💧 ThermAqua Digital Twin</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #7dd3fc; font-size: 16px; margin-bottom: 28px;'>Sub-Boiling Atmospheric Membrane Desalination Driven by AI Server Thermal Exhaust</p>", unsafe_allow_html=True)
 
-# 4 Liquid Glass Telemetry Cards
+# 4 Dynamic Liquid Glass Telemetry Cards
 k1, k2, k3, k4 = st.columns(4)
 
 with k1:
@@ -218,9 +200,9 @@ with k1:
 with k2:
     st.markdown(f"""
     <div class="apple-glass">
-        <div class="glass-label">Primary Thermal Fuel Cost</div>
-        <div class="glass-val-liquid" style="background: linear-gradient(180deg, #ffffff 15%, #86efac 85%, #22c55e 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">$0</div>
-        <div class="glass-badge-pill badge-green">🌱 100% Upcycled Heat</div>
+        <div class="glass-label">Fuel Cost Avoided</div>
+        <div class="glass-val-liquid" style="background: linear-gradient(180deg, #ffffff 15%, #86efac 85%, #22c55e 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${avoided_fuel_annual/1_000_000:.2f}M / yr</div>
+        <div class="glass-badge-pill badge-green">🌱 $0 Paid (100% Upcycled)</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -410,7 +392,7 @@ with b2:
     <div class="apple-glass" style="height: 88%;">
         <b style="color: #38bdf8; font-size: 16px;">Core Engineering Advantage:</b>
         <p style="color: #cbd5e1; font-size: 13.5px; line-height: 1.6; margin-top: 8px;">
-            • <b>Zero Primary Fuel:</b> Uses <b>{daily_thermal_mwh:.0f} MWh/day</b> of free GPU server exhaust heat instead of gas boilers.<br>
+            • <b>Zero Primary Fuel:</b> Upcycles <b>{daily_thermal_mwh:.0f} MWh/day</b> of free GPU server exhaust heat, avoiding <b>${avoided_fuel_annual/1_000_000:.2f}M / yr</b> in boiler gas tariffs.<br>
             • <b>Atmospheric Pressure:</b> Operates at 1 atm without requiring high-pressure 70-bar pumps like Reverse Osmosis.<br>
             • <b>Brine Tolerant:</b> Handles <b>{salinity:,} ppm</b> feed salinity without fouling microporous PTFE membrane pores.
         </p>
