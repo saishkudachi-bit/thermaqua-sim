@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import numpy as np
@@ -11,55 +12,60 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ----------------- WATERY CURSOR & ACTIVE FLUID SIMULATION CSS -----------------
+# ----------------- ACTIVE FLUID BACKGROUND & LIQUID GLASS CSS -----------------
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap');
 
-    /* 1. Custom Interactive Watery Drop Cursor */
+    /* 1. Normal Standard Cursor */
     html, body, .stApp {
-        cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='34' viewBox='0 0 28 34'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23e0f2fe'/><stop offset='40%25' stop-color='%2338bdf8'/><stop offset='80%25' stop-color='%230284c7'/><stop offset='100%25' stop-color='%230369a1'/></linearGradient><filter id='glow' x='-30%25' y='-30%25' width='160%25' height='160%25'><feDropShadow dx='0' dy='2' stdDeviation='2.5' flood-color='%2300f2fe' flood-opacity='0.8'/></filter></defs><path d='M14 2 C14 2 4 14 4 21 C4 26.5 8.5 31 14 31 C19.5 31 24 26.5 24 21 C24 14 14 2 14 2 Z' fill='url(%23g)' stroke='%23ffffff' stroke-width='1.5' filter='url(%23glow)'/><ellipse cx='10.5' cy='18' rx='3' ry='5' fill='%23ffffff' opacity='0.65' transform='rotate(-24 10.5 18)'/></svg>") 14 2, auto !important;
-    }
-
-    /* Interactive Ripple Cursor on Clickable / Hoverable Items */
-    button, [role="button"], input, select, .apple-glass, .apple-pill-card, [data-baseweb="slider"], a {
-        cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'><defs><filter id='rglow'><feDropShadow dx='0' dy='0' stdDeviation='2.5' flood-color='%2338bdf8' flood-opacity='0.95'/></filter></defs><circle cx='18' cy='18' r='14' fill='rgba(14, 165, 233, 0.22)' stroke='%2338bdf8' stroke-width='1.8' stroke-dasharray='4 2' filter='url(%23rglow)'/><circle cx='18' cy='18' r='7.5' fill='none' stroke='%237dd3fc' stroke-width='1.4'/><circle cx='18' cy='18' r='3.5' fill='%23ffffff'/></svg>") 18 18, pointer !important;
-    }
-
-    /* 2. Continuously Moving Deep Ocean Mesh */
-    @keyframes oceanicCurrents {
-        0% { background-position: 0% 0%; }
-        50% { background-position: 100% 100%; }
-        100% { background-position: 0% 0%; }
-    }
-
-    .stApp {
-        background: radial-gradient(circle at 20% 30%, rgba(14, 116, 144, 0.40) 0%, transparent 55%),
-                    radial-gradient(circle at 80% 70%, rgba(2, 132, 199, 0.35) 0%, transparent 60%),
-                    radial-gradient(circle at 50% 50%, rgba(3, 105, 161, 0.20) 0%, transparent 50%),
-                    linear-gradient(135deg, #010814 0%, #031527 35%, #062640 70%, #020e1c 100%) !important;
-        background-size: 260% 260% !important;
-        animation: oceanicCurrents 20s ease-in-out infinite !important;
+        cursor: default !important;
         color: #f8fafc;
         font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
         overflow-x: hidden;
     }
 
-    /* 3. Live Undulating Wave Canvas Layers */
+    /* Interactive hover cursor for buttons, cards, and sliders */
+    button, [role="button"], input, select, .apple-glass, .apple-pill-card, [data-baseweb="slider"], a {
+        cursor: pointer !important;
+    }
+
+    /* 2. Transparent Streamlit Wrappers (So moving water shows everywhere) */
+    div[data-testid="stAppViewContainer"], div[data-testid="stHeader"] {
+        background: transparent !important;
+    }
+
+    /* 3. Deep Fluid Moving Ocean Motion */
+    @keyframes deepOceanFlow {
+        0% { background-position: 0% 25%; }
+        50% { background-position: 100% 75%; }
+        100% { background-position: 0% 25%; }
+    }
+
+    .stApp {
+        background: radial-gradient(circle at 18% 22%, rgba(14, 116, 144, 0.45) 0%, transparent 45%),
+                    radial-gradient(circle at 82% 78%, rgba(2, 132, 199, 0.38) 0%, transparent 55%),
+                    radial-gradient(circle at 50% 50%, rgba(3, 105, 161, 0.22) 0%, transparent 60%),
+                    linear-gradient(135deg, #010814 0%, #03172c 35%, #052a47 70%, #010f1e 100%) !important;
+        background-size: 280% 280% !important;
+        animation: deepOceanFlow 16s ease-in-out infinite !important;
+    }
+
+    /* 4. Active Continuous Wave Canvas */
     @keyframes waveRoll1 {
-        0% { transform: translateX(0) translateZ(0) scaleY(1); }
-        50% { transform: translateX(-25%) translateZ(0) scaleY(1.15); }
-        100% { transform: translateX(-50%) translateZ(0) scaleY(1); }
+        0% { transform: translateX(0) scaleY(1); }
+        50% { transform: translateX(-25%) scaleY(1.2); }
+        100% { transform: translateX(-50%) scaleY(1); }
     }
     @keyframes waveRoll2 {
-        0% { transform: translateX(-50%) translateZ(0) scaleY(0.9); }
-        50% { transform: translateX(-25%) translateZ(0) scaleY(1.1); }
-        100% { transform: translateX(0) translateZ(0) scaleY(0.9); }
+        0% { transform: translateX(-50%) scaleY(0.9); }
+        50% { transform: translateX(-25%) scaleY(1.15); }
+        100% { transform: translateX(0) scaleY(0.9); }
     }
     @keyframes causticShift {
-        0% { opacity: 0.15; transform: scale(1) rotate(0deg); }
-        50% { opacity: 0.32; transform: scale(1.15) rotate(180deg); }
-        100% { opacity: 0.15; transform: scale(1) rotate(360deg); }
+        0% { opacity: 0.18; transform: scale(1) rotate(0deg); }
+        50% { opacity: 0.38; transform: scale(1.18) rotate(180deg); }
+        100% { opacity: 0.18; transform: scale(1) rotate(360deg); }
     }
 
     .water-bg-container {
@@ -75,14 +81,14 @@ st.markdown("""
 
     .caustic-water {
         position: absolute;
-        width: 200%;
-        height: 200%;
-        top: -50%;
-        left: -50%;
-        background-image: radial-gradient(circle, rgba(56, 189, 248, 0.12) 2px, transparent 40px),
-                          radial-gradient(circle, rgba(14, 165, 233, 0.10) 3px, transparent 50px);
-        background-size: 90px 90px, 130px 130px;
-        animation: causticShift 30s linear infinite;
+        width: 220%;
+        height: 220%;
+        top: -60%;
+        left: -60%;
+        background-image: radial-gradient(circle, rgba(56, 189, 248, 0.14) 2px, transparent 38px),
+                          radial-gradient(circle, rgba(14, 165, 233, 0.12) 3px, transparent 48px);
+        background-size: 85px 85px, 125px 125px;
+        animation: causticShift 28s linear infinite;
     }
 
     .wave-strip {
@@ -90,25 +96,25 @@ st.markdown("""
         bottom: 0;
         left: 0;
         width: 300%;
-        height: 180px;
+        height: 210px;
         background-repeat: repeat-x;
     }
 
     .wave-back {
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0 C150,90 350,-40 500,45 C650,130 900,10 1200,50 L1200,120 L0,120 Z" fill="rgba(6,78,119,0.22)"/></svg>');
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0 C150,90 350,-40 500,45 C650,130 900,10 1200,50 L1200,120 L0,120 Z" fill="rgba(6,78,119,0.26)"/></svg>');
         background-size: 1200px 120px;
-        animation: waveRoll1 24s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+        animation: waveRoll1 20s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
         opacity: 0.85;
     }
 
     .wave-front {
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,20 C200,80 400,-10 600,60 C800,130 1000,20 1200,40 L1200,120 L0,120 Z" fill="rgba(14,165,233,0.18)"/></svg>');
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,20 C200,80 400,-10 600,60 C800,130 1000,20 1200,40 L1200,120 L0,120 Z" fill="rgba(14,165,233,0.22)"/></svg>');
         background-size: 1200px 120px;
-        animation: waveRoll2 16s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+        animation: waveRoll2 13s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
         opacity: 0.95;
     }
 
-    /* 4. Apple Liquid Glass UI Elements */
+    /* 5. Apple Liquid Glass UI Elements */
     .apple-glass {
         background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(28px) saturate(190%);
@@ -193,19 +199,104 @@ st.markdown("""
     }
 
     div[data-testid="stSidebar"] {
-        background: rgba(3, 10, 20, 0.72) !important;
+        background: rgba(3, 10, 20, 0.75) !important;
         backdrop-filter: blur(30px) saturate(180%) !important;
         border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
     }
 </style>
 
-<!-- Live Moving Water Background Injector -->
+<!-- Live Moving Ocean Wave Layers -->
 <div class="water-bg-container">
     <div class="caustic-water"></div>
     <div class="wave-strip wave-back"></div>
     <div class="wave-strip wave-front"></div>
 </div>
 """, unsafe_allow_html=True)
+
+# ----------------- JAVASCRIPT: INTERACTIVE WATER RIPPLE CURSOR TRAIL -----------------
+components.html("""
+<script>
+(function() {
+    try {
+        const doc = window.parent.document || document;
+        if (doc.getElementById('water-trail-active')) return;
+        
+        const marker = doc.createElement('div');
+        marker.id = 'water-trail-active';
+        marker.style.display = 'none';
+        doc.body.appendChild(marker);
+
+        let lastTime = 0;
+
+        // 1. Moving Cursor Water Ripple Trail
+        doc.addEventListener('mousemove', function(e) {
+            const now = Date.now();
+            if (now - lastTime < 32) return; // Smooth 30fps ripple frequency
+            lastTime = now;
+
+            const ripple = doc.createElement('div');
+            ripple.style.position = 'fixed';
+            ripple.style.left = e.clientX + 'px';
+            ripple.style.top = e.clientY + 'px';
+            ripple.style.width = '12px';
+            ripple.style.height = '12px';
+            ripple.style.borderRadius = '50%';
+            ripple.style.border = '1.5px solid rgba(56, 189, 248, 0.75)';
+            ripple.style.background = 'radial-gradient(circle, rgba(56, 189, 248, 0.35) 0%, rgba(14, 165, 233, 0.1) 60%, transparent 100%)';
+            ripple.style.boxShadow = '0 0 10px rgba(56, 189, 248, 0.55)';
+            ripple.style.pointerEvents = 'none';
+            ripple.style.zIndex = '999999';
+            ripple.style.transform = 'translate(-50%, -50%) scale(1)';
+            ripple.style.transition = 'transform 0.65s cubic-bezier(0.1, 0.8, 0.3, 1), opacity 0.65s ease-out';
+            ripple.style.opacity = '1';
+
+            doc.body.appendChild(ripple);
+
+            requestAnimationFrame(() => {
+                ripple.style.transform = 'translate(-50%, -50%) scale(3.2)';
+                ripple.style.opacity = '0';
+            });
+
+            setTimeout(() => {
+                ripple.remove();
+            }, 700);
+        });
+
+        // 2. Interactive Water Splash on Click
+        doc.addEventListener('mousedown', function(e) {
+            const splash = doc.createElement('div');
+            splash.style.position = 'fixed';
+            splash.style.left = e.clientX + 'px';
+            splash.style.top = e.clientY + 'px';
+            splash.style.width = '24px';
+            splash.style.height = '24px';
+            splash.style.borderRadius = '50%';
+            splash.style.border = '2px solid rgba(125, 211, 252, 0.9)';
+            splash.style.background = 'radial-gradient(circle, rgba(56, 189, 248, 0.6) 0%, transparent 70%)';
+            splash.style.boxShadow = '0 0 16px rgba(56, 189, 248, 0.85)';
+            splash.style.pointerEvents = 'none';
+            splash.style.zIndex = '999999';
+            splash.style.transform = 'translate(-50%, -50%) scale(1)';
+            splash.style.transition = 'transform 0.55s ease-out, opacity 0.55s ease-out';
+            splash.style.opacity = '1';
+
+            doc.body.appendChild(splash);
+
+            requestAnimationFrame(() => {
+                splash.style.transform = 'translate(-50%, -50%) scale(5.5)';
+                splash.style.opacity = '0';
+            });
+
+            setTimeout(() => {
+                splash.remove();
+            }, 600);
+        });
+    } catch(err) {
+        console.log('Water cursor active in fallback mode');
+    }
+})();
+</script>
+""", height=0, width=0)
 
 # ----------------- FIRST-PRINCIPLES PHYSICS -----------------
 def calc_distillate_yield(it_mw, temp_c, sal_ppm, eta):
@@ -316,7 +407,7 @@ heat_mwh_axis = mw_axis * 24.0
 
 fig_dual = make_subplots(specs=[[{"secondary_y": True}]])
 
-# Water Generation Smooth Spline Area
+# Water Generation Area
 fig_dual.add_trace(
     go.Scatter(
         x=mw_axis,
@@ -330,7 +421,7 @@ fig_dual.add_trace(
     secondary_y=False
 )
 
-# Heat Energy Intercepted (Right Axis)
+# Heat Energy Intercepted
 fig_dual.add_trace(
     go.Scatter(
         x=mw_axis,
@@ -342,7 +433,7 @@ fig_dual.add_trace(
     secondary_y=True
 )
 
-# Interactive Operating Point Marker
+# Active Operating Point Marker
 fig_dual.add_trace(
     go.Scatter(
         x=[it_capacity],
