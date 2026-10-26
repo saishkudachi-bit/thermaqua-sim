@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom Styling for polished dark UI
+# Custom Styling for polished dark UI & hardware process cards
 st.markdown("""
 <style>
     .metric-card {
@@ -26,19 +26,61 @@ st.markdown("""
         border-radius: 8px;
         margin-bottom: 8px;
     }
-    .flow-step {
+    .flow-card {
         background: #161b22;
         border: 1px solid #30363d;
-        border-radius: 8px;
+        border-radius: 10px;
         padding: 16px;
         text-align: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .flow-badge-red {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        border: 1px solid #ef4444;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .flow-badge-blue {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3b82f6;
+        border: 1px solid #3b82f6;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .flow-badge-green {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+        border: 1px solid #10b981;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .flow-badge-cyan {
+        background: rgba(6, 182, 212, 0.2);
+        color: #06b6d4;
+        border: 1px solid #06b6d4;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .flow-arrow {
+        font-size: 26px;
+        color: #64748b;
+        text-align: center;
+        margin-top: 35px;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # ----------------- FIRST-PRINCIPLES PHYSICS -----------------
 def calc_distillate_yield(it_mw, temp_c, sal_ppm, eta):
-    # Normalized: 10 MW at 65°C, 70k ppm, 0.58 eta = 208,800 L/day
     temp_factor = (temp_c / 65.0) ** 1.3
     salinity_factor = 1.0 - (sal_ppm / 100000.0) * 0.05
     recovery_mult = 1.0 + (eta - 0.58) * 0.85
@@ -115,49 +157,58 @@ with col4:
 
 st.write("---")
 
-# ----------------- CLEAN BALANCED STREAM FLOW -----------------
-st.subheader("System Stream Balance (Mass & Energy Conservation)")
+# ----------------- SCADA INDUSTRIAL FLOW PIPELINE -----------------
+st.subheader("System Operational Architecture (End-to-End Stream Flow)")
 
-# Perfectly balanced 50/50 flow distribution so links are straight and level
-stream_volume = 100.0
+c_in, c_arr1, c_core, c_arr2, c_out = st.columns([2.2, 0.4, 2.5, 0.4, 2.2])
 
-fig_sankey = go.Figure(data=[go.Sankey(
-    arrangement="snap",
-    node=dict(
-        pad=30,
-        thickness=20,
-        line=dict(color="#222", width=1),
-        label=[
-            f"GPU Thermal Exhaust ({it_capacity:.1f} MW @ {coolant_temp}°C)",
-            f"Feed Saline Water ({salinity:,} ppm)",
-            "ThermAqua Membrane Skid",
-            f"Pure Fresh Distillate ({daily_yield_liters:,.0f} L/day)",
-            f"Closed-Loop Return ({coolant_temp-15}°C back to GPUs)"
-        ],
-        color=["#ef4444", "#3b82f6", "#6366f1", "#10b981", "#06b6d4"]
-    ),
-    link=dict(
-        source=[0, 1, 2, 2],
-        target=[2, 2, 3, 4],
-        value=[stream_volume, stream_volume, stream_volume, stream_volume],
-        color=[
-            "rgba(239, 68, 68, 0.40)",
-            "rgba(59, 130, 246, 0.40)",
-            "rgba(16, 185, 129, 0.60)",
-            "rgba(6, 182, 212, 0.40)"
-        ]
-    )
-)])
+with c_in:
+    st.markdown(f"""
+    <div class="flow-card">
+        <span class="flow-badge-red">THERMAL INPUT</span><br><br>
+        <b style="font-size:16px;">GPU Server Loop</b><br>
+        <span style="color:#94a3b8; font-size:13px;">Heat: <b>{it_capacity:.1f} MW</b></span><br>
+        <span style="color:#ef4444; font-size:13px;">Temp: <b>{coolant_temp}°C</b></span>
+        <hr style="border-color:#30363d; margin: 10px 0;">
+        <span class="flow-badge-blue">FEEDSTREAM</span><br><br>
+        <b style="font-size:16px;">Saline Water Feed</b><br>
+        <span style="color:#94a3b8; font-size:13px;">Salinity: <b>{salinity:,} ppm</b></span>
+    </div>
+    """, unsafe_allow_html=True)
 
-fig_sankey.update_layout(
-    height=260,
-    margin=dict(l=10, r=10, t=10, b=10),
-    paper_bgcolor="rgba(0,0,0,0)",
-    plot_bgcolor="rgba(0,0,0,0)",
-    font=dict(size=12, color="white")
-)
+with c_arr1:
+    st.markdown('<div class="flow-arrow">➔<br><br>➔</div>', unsafe_allow_html=True)
 
-st.plotly_chart(fig_sankey, use_container_width=True)
+with c_core:
+    st.markdown(f"""
+    <div class="flow-card" style="border: 2px solid #6366f1;">
+        <span style="background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid #6366f1; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">ACTIVE CORE</span><br><br>
+        <b style="font-size:18px; color: #a5b4fc;">ThermAqua Skid</b><br>
+        <span style="color:#e2e8f0; font-size:13px;">• PTFE Hydrophobic Membrane (0.2 µm)</span><br>
+        <span style="color:#e2e8f0; font-size:13px;">• Vapor Pressure: <b>Atmospheric (1 atm)</b></span><br>
+        <span style="color:#e2e8f0; font-size:13px;">• Heat Recovery: <b>{recovery_factor*100:.0f}% Latent Re-use</b></span><br>
+        <span style="color:#e2e8f0; font-size:13px;">• Auxiliary Draw: <b>{sec_val:.2f} kWh/m³</b></span>
+    </div>
+    """, unsafe_allow_html=True)
+
+with c_arr2:
+    st.markdown('<div class="flow-arrow">➔<br><br>➔</div>', unsafe_allow_html=True)
+
+with c_out:
+    st.markdown(f"""
+    <div class="flow-card">
+        <span class="flow-badge-green">PURE OUTPUT</span><br><br>
+        <b style="font-size:16px;">Clean Distillate</b><br>
+        <span style="color:#10b981; font-size:14px; font-weight:bold;">{daily_yield_liters:,.0f} L/day</span><br>
+        <span style="color:#94a3b8; font-size:12px;">Purity: &lt;12 ppm TDS</span>
+        <hr style="border-color:#30363d; margin: 10px 0;">
+        <span class="flow-badge-cyan">CHILLED LOOP RETURN</span><br><br>
+        <b style="font-size:16px;">Sub-cooled Liquid</b><br>
+        <span style="color:#06b6d4; font-size:13px;">Temp: <b>{coolant_temp - 15}°C</b> back to Cold Plates</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.write("---")
 
 # ----------------- REAL-WORLD IMPACT BADGES -----------------
 st.subheader("Real-World Impact Equivalents")
@@ -194,7 +245,7 @@ with imp3:
 st.write("---")
 
 # ----------------- TABS: BENCHMARK & LOAD SCALING -----------------
-tab1, tab2, tab3 = st.tabs(["📊 Performance Benchmarking", "📈 Load Scaling Model", "🔬 4-Step Physical Pipeline"])
+tab1, tab2, tab3 = st.tabs(["📊 Performance Benchmarking", "📈 Load Scaling Model", "🔬 Technical Specifications"])
 
 with tab1:
     c1, c2 = st.columns([1, 1.2])
@@ -273,9 +324,9 @@ with tab2:
 
 with tab3:
     st.markdown("""
-    #### Physical Flow Architecture:
-    1. **Direct-to-Chip Loop:** Coolant picks up heat directly from GPU cold plates, exiting rack manifolds at **55°C–75°C**.
-    2. **Heat Interceptor Skid:** An intermediate plate heat exchanger transfers thermal energy to the saline feed water without contaminating server cooling loops.
-    3. **Hydrophobic PTFE Membrane:** Saline water flows over microporous Teflon membranes (0.2 µm pore size). Liquid water is blocked by surface tension; pure water vapor diffuses across.
-    4. **Latent Heat Condenser:** Pure vapor condenses into fresh distillate (<12 ppm TDS), recycling latent heat of condensation into the feed stream.
+    #### Membrane & Skid Hardware Specs:
+    * **Membrane Material:** Hydrophobic Microporous PTFE (Polytetrafluoroethylene) with Polypropylene scrim backing.
+    * **Nominal Pore Diameter:** 0.2 µm – 0.45 µm (liquid entry pressure > 2.5 bar).
+    * **Module Geometry:** High-density Hollow Fiber module assembly (>1,000 m²/m³ packing density).
+    * **Working Driving Force:** Transmembrane water vapor pressure gradient driven by sub-boiling temperature differential ($\Delta T \approx 40^\circ\text{C}$).
     """)
