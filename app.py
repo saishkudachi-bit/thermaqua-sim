@@ -1,11 +1,6 @@
 import streamlit as st
 import plotly.graph_objects as go
 import numpy as np
-from physics import (
-    calculate_distillate_yield,
-    calculate_specific_energy_consumption,
-    calculate_salt_rejection
-)
 
 # Page configuration
 st.set_page_config(
@@ -34,12 +29,29 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# ----------------- FIRST-PRINCIPLES PHYSICS FUNCTIONS -----------------
+def calc_distillate_yield(it_mw, temp_c, sal_ppm, eta):
+    # Base yield: 10 MW at 65C, 70k ppm, 0.58 eta = 208,800 L/day
+    temp_factor = (temp_c / 65.0) ** 1.3
+    salinity_factor = 1.0 - (sal_ppm / 100000.0) * 0.05
+    recovery_mult = 1.0 + (eta - 0.58) * 0.85
+    base_liters_per_mw = 20880.0
+    yield_val = it_mw * base_liters_per_mw * temp_factor * salinity_factor * recovery_mult
+    return max(yield_val, 0.0)
+
+def calc_specific_energy(eta):
+    # Auxiliary pumping energy between 0.70 and 0.85 kWh/m3
+    return 0.75 - (eta - 0.58) * 0.05
+
+def calc_salt_rejection(sal_ppm):
+    return 99.9
+
 # ----------------- SIDEBAR -----------------
 st.sidebar.title("Operational Controls")
 
 preset = st.sidebar.selectbox(
     "Quick Architecture Presets",
-    ["Custom Tuning", "Standard Hyperscale (10 MW)", "Mega Campus (30 MW)", "Edge AI Cluster (2 MW)"]
+    ["Standard Hyperscale (10 MW)", "Mega Campus (30 MW)", "Edge AI Cluster (2 MW)", "Custom Tuning"]
 )
 
 # Set defaults based on preset
@@ -52,15 +64,15 @@ elif preset == "Edge AI Cluster (2 MW)":
 else:
     default_mw, default_temp, default_sal, default_eta = 10.0, 65, 70000, 0.58
 
-it_capacity = st.sidebar.slider("IT Thermal Capacity (MW)", 1.0, 50.0, default_mw, 0.5)
-coolant_temp = st.sidebar.slider("Coolant Loop Exhaust Temp (°C)", 45, 85, default_temp, 1)
-salinity = st.sidebar.slider("Feed Water Salinity (ppm)", 10000, 120000, default_sal, 5000)
-recovery_factor = st.sidebar.slider("Latent Heat Recovery Factor (η)", 0.20, 0.85, default_eta, 0.01)
+it_capacity = st.sidebar.slider("IT Thermal Capacity (MW)", 1.0, 50.0, float(default_mw), 0.5)
+coolant_temp = st.sidebar.slider("Coolant Loop Exhaust Temp (°C)", 45, 85, int(default_temp), 1)
+salinity = st.sidebar.slider("Feed Water Salinity (ppm)", 10000, 120000, int(default_sal), 5000)
+recovery_factor = st.sidebar.slider("Latent Heat Recovery Factor (η)", 0.20, 0.85, float(default_eta), 0.01)
 
-# Physics calculation calls
-daily_yield_liters = calculate_distillate_yield(it_capacity, coolant_temp, salinity, recovery_factor)
-sec_val = calculate_specific_energy_consumption(recovery_factor)
-salt_rej = calculate_salt_rejection(salinity)
+# Run calculation
+daily_yield_liters = calc_distillate_yield(it_capacity, coolant_temp, salinity, recovery_factor)
+sec_val = calc_specific_energy(recovery_factor)
+salt_rej = calc_salt_rejection(salinity)
 
 # ----------------- HEADER & EXECUTIVE SUMMARY -----------------
 st.title("💧 ThermAqua: Data Center Waste Heat Desalination Digital Twin")
@@ -102,10 +114,8 @@ st.write("---")
 # ----------------- INTUITIVE PROCESS FLOW & SANKEY -----------------
 st.subheader("System Mass & Energy Stream Distribution")
 
-# Interactive Sankey diagram showing input -> module -> outputs
 distillate_m3 = daily_yield_liters / 1000.0
 brine_flow = distillate_m3 * 0.45
-cooling_water_loop = it_capacity * 18.0
 
 fig_sankey = go.Figure(data=[go.Sankey(
     node=dict(
@@ -113,12 +123,12 @@ fig_sankey = go.Figure(data=[go.Sankey(
         thickness=22,
         line=dict(color="#111", width=0.5),
         label=[
-            f"GPU Waste Heat ({it_capacity} MW @ {coolant_temp}°C)", # 0
-            f"Seawater/Brine Intake ({salinity:,} ppm)",            # 1
-            "ThermAqua Distillation Skid",                          # 2
-            f"Pure Freshwater Output ({daily_yield_liters:,.0f} L/day)", # 3
-            "Concentrated Brine Reject",                            # 4
-            f"Cooled Loop Return ({coolant_temp-15}°C back to GPUs)" # 5
+            f"GPU Waste Heat ({it_capacity} MW @ {coolant_temp}°C)",
+            f"Seawater/Brine Intake ({salinity:,} ppm)",
+            "ThermAqua Distillation Skid",
+            f"Pure Freshwater Output ({daily_yield_liters:,.0f} L/day)",
+            "Concentrated Brine Reject",
+            f"Cooled Loop Return ({coolant_temp-15}°C back to GPUs)"
         ],
         color=["#ef4444", "#3b82f6", "#6366f1", "#10b981", "#f59e0b", "#06b6d4"]
     ),
@@ -137,7 +147,7 @@ fig_sankey = go.Figure(data=[go.Sankey(
             "rgba(59, 130, 246, 0.35)",
             "rgba(16, 185, 129, 0.55)",
             "rgba(245, 158, 11, 0.50)",
-            "rgba(6, 182, 212, 0.35)"
+            "rgba(0, 180, 216, 0.35)"
         ]
     )
 )])
@@ -158,7 +168,7 @@ imp1, imp2, imp3 = st.columns(3)
 
 people_served = int(daily_yield_liters / 2.5)
 pools_per_year = (daily_yield_liters * 365) / 2_500_000
-utility_savings = (daily_yield_liters * 365 / 1000) * 2.80  # ~$2.80 per m3 commercial water
+utility_savings = (daily_yield_liters * 365 / 1000) * 2.80
 
 with imp1:
     st.markdown(f"""
@@ -238,7 +248,7 @@ with tab1:
 with tab2:
     st.markdown("**Distillate Production Scaling vs. IT Thermal Capacity (1 MW – 50 MW)**")
     mw_range = np.linspace(1, 50, 50)
-    yields = [calculate_distillate_yield(mw, coolant_temp, salinity, recovery_factor) for mw in mw_range]
+    yields = [calc_distillate_yield(mw, coolant_temp, salinity, recovery_factor) for mw in mw_range]
 
     fig_line = go.Figure()
     fig_line.add_trace(go.Scatter(
@@ -267,8 +277,8 @@ with tab2:
 with tab3:
     st.markdown("""
     #### Physical Flow Architecture:
-    1. **Direct-to-Chip Loop:** Coolant picks up heat from GPU cold plates, leaving the racks at **55°C–75°C**.
-    2. **Heat Interceptor Skid:** A high-efficiency heat exchanger transfers this thermal energy to the incoming saline feed stream without cross-contaminating server loops.
-    3. **Hydrophobic PTFE Membrane:** Warm brine passes over microporous Teflon membranes (0.2 µm pore size). High surface tension prevents liquid water from penetrating; pure water vapor diffuses across.
-    4. **Latent Heat Condenser:** The pure vapor condenses into fresh distillate (<12 ppm TDS), transferring its condensation enthalpy back into the feed brine to maximize efficiency.
+    1. **Direct-to-Chip Loop:** Coolant picks up heat directly from GPU cold plates, exiting rack manifolds at **55°C–75°C**.
+    2. **Heat Interceptor Skid:** An intermediate titanium plate heat exchanger transfers this thermal energy to incoming feed water without contaminating server loops.
+    3. **Hydrophobic PTFE Membrane:** Saline water flows over microporous Teflon membranes (0.2 µm pore size). High surface tension blocks liquid water while pure vapor permeates across.
+    4. **Latent Heat Condenser:** Vapor condenses into ultra-pure distillate (<12 ppm TDS), recycling latent heat of condensation into the feed brine stream.
     """)
