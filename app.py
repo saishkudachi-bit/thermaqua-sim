@@ -4,77 +4,60 @@ import numpy as np
 
 # Page configuration
 st.set_page_config(
-    page_title="ThermAqua | Data Center Thermal Desalination Twin",
-    page_icon="💧",
+    page_title="ThermAqua | AI Thermal Desalination Twin",
+    page_icon="🌊",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom Styling for polished dark UI & hardware process cards
+# Custom High-End Cyber/Industrial Glassmorphic Theme
 st.markdown("""
 <style>
-    .metric-card {
-        background-color: #1e222d;
-        border-radius: 10px;
-        padding: 18px;
-        border: 1px solid #2e3440;
+    .kpi-box {
+        background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+        border: 1px solid rgba(255,255,255,0.12);
+        backdrop-filter: blur(10px);
+        border-radius: 14px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        transition: transform 0.2s ease;
     }
-    .impact-pill {
-        background: #111827;
-        border-left: 4px solid #10b981;
-        padding: 14px 18px;
-        border-radius: 8px;
-        margin-bottom: 8px;
+    .kpi-box:hover {
+        transform: translateY(-4px);
+        border-color: #38bdf8;
     }
-    .flow-card {
-        background: #161b22;
-        border: 1px solid #30363d;
-        border-radius: 10px;
+    .kpi-title {
+        color: #94a3b8;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+    .kpi-val {
+        font-size: 32px;
+        font-weight: 800;
+        margin: 6px 0;
+        background: linear-gradient(90deg, #38bdf8, #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .kpi-badge {
+        font-size: 12px;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .badge-green { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+    .badge-blue { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #0284c7; }
+    
+    .infocard {
+        background: #0f172a;
+        border-radius: 12px;
         padding: 16px;
+        border: 1px solid #1e293b;
         text-align: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-    .flow-badge-red {
-        background: rgba(239, 68, 68, 0.2);
-        color: #ef4444;
-        border: 1px solid #ef4444;
-        padding: 3px 8px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 600;
-    }
-    .flow-badge-blue {
-        background: rgba(59, 130, 246, 0.2);
-        color: #3b82f6;
-        border: 1px solid #3b82f6;
-        padding: 3px 8px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 600;
-    }
-    .flow-badge-green {
-        background: rgba(16, 185, 129, 0.2);
-        color: #10b981;
-        border: 1px solid #10b981;
-        padding: 3px 8px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 600;
-    }
-    .flow-badge-cyan {
-        background: rgba(6, 182, 212, 0.2);
-        color: #06b6d4;
-        border: 1px solid #06b6d4;
-        padding: 3px 8px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 600;
-    }
-    .flow-arrow {
-        font-size: 26px;
-        color: #64748b;
-        text-align: center;
-        margin-top: 35px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -91,242 +74,239 @@ def calc_distillate_yield(it_mw, temp_c, sal_ppm, eta):
 def calc_specific_energy(eta):
     return 0.75 - (eta - 0.58) * 0.05
 
-def calc_salt_rejection(sal_ppm):
-    return 99.9
-
 # ----------------- SIDEBAR CONTROLS -----------------
-st.sidebar.title("Operational Controls")
+st.sidebar.image("https://img.icons8.com/fluency/96/water-drop.png", width=60)
+st.sidebar.title("🎛️ Mission Control")
 
 preset = st.sidebar.selectbox(
-    "Quick Architecture Presets",
-    ["Standard Hyperscale (10 MW)", "Mega Campus (30 MW)", "Edge AI Cluster (2 MW)", "Custom Tuning"]
+    "⚡ One-Click Scenarios",
+    ["Standard Hyperscale (10 MW)", "Mega AI Campus (30 MW)", "Edge Node (2 MW)", "Manual Tuning"]
 )
 
 if preset == "Standard Hyperscale (10 MW)":
     default_mw, default_temp, default_sal, default_eta = 10.0, 65, 70000, 0.58
-elif preset == "Mega Campus (30 MW)":
+elif preset == "Mega AI Campus (30 MW)":
     default_mw, default_temp, default_sal, default_eta = 30.0, 72, 70000, 0.65
-elif preset == "Edge AI Cluster (2 MW)":
+elif preset == "Edge Node (2 MW)":
     default_mw, default_temp, default_sal, default_eta = 2.0, 55, 45000, 0.45
 else:
     default_mw, default_temp, default_sal, default_eta = 10.0, 65, 70000, 0.58
 
-it_capacity = st.sidebar.slider("IT Thermal Capacity (MW)", 1.0, 50.0, float(default_mw), 0.5)
-coolant_temp = st.sidebar.slider("Coolant Loop Exhaust Temp (°C)", 45, 85, int(default_temp), 1)
-salinity = st.sidebar.slider("Feed Water Salinity (ppm)", 10000, 120000, int(default_sal), 5000)
-recovery_factor = st.sidebar.slider("Latent Heat Recovery Factor (η)", 0.20, 0.85, float(default_eta), 0.01)
+it_capacity = st.sidebar.slider("🔥 Server Heat Output (MW)", 1.0, 50.0, float(default_mw), 0.5)
+coolant_temp = st.sidebar.slider("🌡️ GPU Coolant Temp (°C)", 45, 85, int(default_temp), 1)
+salinity = st.sidebar.slider("🧂 Saltiness of Intake (ppm)", 10000, 120000, int(default_sal), 5000)
+recovery_factor = st.sidebar.slider("♻️ Heat Recycling Efficiency (η)", 0.20, 0.85, float(default_eta), 0.01)
 
-# Physics calculation
+# Run calculation
 daily_yield_liters = calc_distillate_yield(it_capacity, coolant_temp, salinity, recovery_factor)
 sec_val = calc_specific_energy(recovery_factor)
-salt_rej = calc_salt_rejection(salinity)
 
-# ----------------- HEADER & KPIS -----------------
-st.title("💧 ThermAqua: Data Center Waste Heat Desalination Digital Twin")
-st.markdown(
-    "Mathematical modeling and operational simulation of sub-boiling atmospheric membrane distillation "
-    "driven by AI server thermal exhaust."
-)
+# Calculations for human equivalents
+people_supplied = int(daily_yield_liters / 2.5)
+bottles_per_min = int(daily_yield_liters / (24 * 60 * 0.5))
+water_savings_usd = (daily_yield_liters * 365 / 1000) * 2.80
 
-col1, col2, col3, col4 = st.columns(4)
-with col1:
-    st.metric(
-        label="Daily Distillate Yield",
-        value=f"{daily_yield_liters:,.0f} L/day",
-        delta=f"{daily_yield_liters/1000.0:,.1f} m³/day"
-    )
-with col2:
-    st.metric(
-        label="Primary Thermal Fuel Cost",
-        value="$0 / year",
-        delta="100% Upcycled Heat"
-    )
-with col3:
-    st.metric(
-        label="Specific Electric Demand",
-        value=f"{sec_val:.2f} kWh/m³",
-        delta="-75% vs MSF",
-        delta_color="normal"
-    )
-with col4:
-    st.metric(
-        label="Salt Rejection Ratio",
-        value=f"{salt_rej:.1f}%",
-        delta="< 12 ppm TDS"
-    )
+# ----------------- APP HEADER -----------------
+st.markdown("<h1 style='text-align: center; margin-bottom: 0;'>🌊 ThermAqua Digital Twin</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #94a3b8; font-size: 18px;'>Transforming AI Server Heat into Pure Water with Zero Extra Fuel</p>", unsafe_allow_html=True)
+st.write("")
 
-st.write("---")
+# ----------------- HERO GLASSMORPHIC KPI CARDS -----------------
+c1, c2, c3, c4 = st.columns(4)
 
-# ----------------- SCADA INDUSTRIAL FLOW PIPELINE -----------------
-st.subheader("System Operational Architecture (End-to-End Stream Flow)")
-
-c_in, c_arr1, c_core, c_arr2, c_out = st.columns([2.2, 0.4, 2.5, 0.4, 2.2])
-
-with c_in:
+with c1:
     st.markdown(f"""
-    <div class="flow-card">
-        <span class="flow-badge-red">THERMAL INPUT</span><br><br>
-        <b style="font-size:16px;">GPU Server Loop</b><br>
-        <span style="color:#94a3b8; font-size:13px;">Heat: <b>{it_capacity:.1f} MW</b></span><br>
-        <span style="color:#ef4444; font-size:13px;">Temp: <b>{coolant_temp}°C</b></span>
-        <hr style="border-color:#30363d; margin: 10px 0;">
-        <span class="flow-badge-blue">FEEDSTREAM</span><br><br>
-        <b style="font-size:16px;">Saline Water Feed</b><br>
-        <span style="color:#94a3b8; font-size:13px;">Salinity: <b>{salinity:,} ppm</b></span>
+    <div class="kpi-box">
+        <div class="kpi-title">Freshwater Made</div>
+        <div class="kpi-val">{daily_yield_liters:,.0f} L</div>
+        <span class="kpi-badge badge-blue">💧 {daily_yield_liters/1000:,.1f} m³ Every Day</span>
     </div>
     """, unsafe_allow_html=True)
 
-with c_arr1:
-    st.markdown('<div class="flow-arrow">➔<br><br>➔</div>', unsafe_allow_html=True)
-
-with c_core:
+with c2:
     st.markdown(f"""
-    <div class="flow-card" style="border: 2px solid #6366f1;">
-        <span style="background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid #6366f1; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">ACTIVE CORE</span><br><br>
-        <b style="font-size:18px; color: #a5b4fc;">ThermAqua Skid</b><br>
-        <span style="color:#e2e8f0; font-size:13px;">• PTFE Hydrophobic Membrane (0.2 µm)</span><br>
-        <span style="color:#e2e8f0; font-size:13px;">• Vapor Pressure: <b>Atmospheric (1 atm)</b></span><br>
-        <span style="color:#e2e8f0; font-size:13px;">• Heat Recovery: <b>{recovery_factor*100:.0f}% Latent Re-use</b></span><br>
-        <span style="color:#e2e8f0; font-size:13px;">• Auxiliary Draw: <b>{sec_val:.2f} kWh/m³</b></span>
+    <div class="kpi-box">
+        <div class="kpi-title">Primary Fuel Cost</div>
+        <div class="kpi-val" style="background: linear-gradient(90deg, #10b981, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">$0</div>
+        <span class="kpi-badge badge-green">🌱 100% Waste Heat Powered</span>
     </div>
     """, unsafe_allow_html=True)
 
-with c_arr2:
-    st.markdown('<div class="flow-arrow">➔<br><br>➔</div>', unsafe_allow_html=True)
-
-with c_out:
+with c3:
     st.markdown(f"""
-    <div class="flow-card">
-        <span class="flow-badge-green">PURE OUTPUT</span><br><br>
-        <b style="font-size:16px;">Clean Distillate</b><br>
-        <span style="color:#10b981; font-size:14px; font-weight:bold;">{daily_yield_liters:,.0f} L/day</span><br>
-        <span style="color:#94a3b8; font-size:12px;">Purity: &lt;12 ppm TDS</span>
-        <hr style="border-color:#30363d; margin: 10px 0;">
-        <span class="flow-badge-cyan">CHILLED LOOP RETURN</span><br><br>
-        <b style="font-size:16px;">Sub-cooled Liquid</b><br>
-        <span style="color:#06b6d4; font-size:13px;">Temp: <b>{coolant_temp - 15}°C</b> back to Cold Plates</span>
+    <div class="kpi-box">
+        <div class="kpi-title">Power Needed</div>
+        <div class="kpi-val">{sec_val:.2f}</div>
+        <span class="kpi-badge badge-blue">⚡ kWh / m³ (Pumps Only)</span>
     </div>
     """, unsafe_allow_html=True)
 
-st.write("---")
-
-# ----------------- REAL-WORLD IMPACT BADGES -----------------
-st.subheader("Real-World Impact Equivalents")
-imp1, imp2, imp3 = st.columns(3)
-
-people_served = int(daily_yield_liters / 2.5)
-pools_per_year = (daily_yield_liters * 365) / 2_500_000
-utility_savings = (daily_yield_liters * 365 / 1000) * 2.80
-
-with imp1:
+with c4:
     st.markdown(f"""
-    <div class="impact-pill">
-        <strong>Community Impact:</strong><br>
-        Supplies daily drinking water for <b>{people_served:,} people</b> (at 2.5 L/day).
+    <div class="kpi-box">
+        <div class="kpi-title">Water Cleanliness</div>
+        <div class="kpi-val" style="background: linear-gradient(90deg, #38bdf8, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">99.9%</div>
+        <span class="kpi-badge badge-green">✨ Ultra-Pure (&lt;12 ppm)</span>
     </div>
     """, unsafe_allow_html=True)
 
-with imp2:
-    st.markdown(f"""
-    <div class="impact-pill">
-        <strong>Volume Benchmark:</strong><br>
-        Produces equivalent of <b>{pools_per_year:.1f} Olympic pools</b> of clean water per year.
-    </div>
-    """, unsafe_allow_html=True)
+st.write("")
 
-with imp3:
-    st.markdown(f"""
-    <div class="impact-pill">
-        <strong>Data Center Water Savings:</strong><br>
-        Saves estimated <b>${utility_savings:,.0f} / year</b> in municipal water tariffs.
-    </div>
-    """, unsafe_allow_html=True)
+# ----------------- VISUAL GAUGES & TANK MONITOR -----------------
+st.markdown("### 🎚️ Live Visual Telemetry")
 
-st.write("---")
+g1, g2, g3 = st.columns([1.2, 1.2, 1.4])
 
-# ----------------- TABS: BENCHMARK & LOAD SCALING -----------------
-tab1, tab2, tab3 = st.tabs(["📊 Performance Benchmarking", "📈 Load Scaling Model", "🔬 Technical Specifications"])
-
-with tab1:
-    c1, c2 = st.columns([1, 1.2])
-    with c1:
-        st.markdown("**Auxiliary Electrical Demand (kWh/m³)**")
-        fig_bar = go.Figure(go.Bar(
-            x=["ThermAqua (Our Model)", "Reverse Osmosis (RO)", "Multi-Stage Flash (MSF)"],
-            y=[sec_val, 3.5, 4.0],
-            text=[f"{sec_val:.2f} kWh/m³", "3.5 kWh/m³", "4.0 kWh/m³"],
-            textposition="auto",
-            marker_color=["#10b981", "#f97316", "#ef4444"]
-        ))
-        fig_bar.update_layout(
-            height=300,
-            margin=dict(l=10, r=10, t=20, b=10),
-            yaxis_title="kWh / m³",
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)"
-        )
-        st.plotly_chart(fig_bar, use_container_width=True)
-
-    with c2:
-        st.markdown("**Operational Parameter Matrix**")
-        st.table({
-            "Dimension": [
-                "Primary Energy Source",
-                "Additional Fuel Cost",
-                "Feed Salinity Tolerance",
-                "Operating Pressure",
-                "Product Water Purity"
+with g1:
+    # Coolant Temperature Gauge
+    fig_temp = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=coolant_temp,
+        title={'text': "GPU Coolant Temp (°C)", 'font': {'size': 16, 'color': '#94a3b8'}},
+        gauge={
+            'axis': {'range': [40, 90], 'tickcolor': "white"},
+            'bar': {'color': "#ef4444"},
+            'steps': [
+                {'range': [40, 55], 'color': "rgba(59, 130, 246, 0.2)"},
+                {'range': [55, 75], 'color': "rgba(16, 185, 129, 0.2)"},
+                {'range': [75, 90], 'color': "rgba(239, 68, 68, 0.2)"}
             ],
-            "ThermAqua (Our Project)": [
-                f"GPU Coolant ({coolant_temp}°C)",
-                "$0 (Upcycled Waste Heat)",
-                f"{salinity:,} ppm",
-                "Ambient (1 atm)",
-                "< 12 ppm TDS"
-            ],
-            "Traditional MSF": [
-                "Fossil Fuel Boilers (100°C+)",
-                "Extremely High",
-                "40,000–50,000 ppm",
-                "Vacuum Chambers",
-                "< 25 ppm TDS"
-            ]
-        })
-
-with tab2:
-    st.markdown("**Distillate Production Scaling vs. IT Thermal Capacity (1 MW – 50 MW)**")
-    mw_range = np.linspace(1, 50, 50)
-    yields = [calc_distillate_yield(mw, coolant_temp, salinity, recovery_factor) for mw in mw_range]
-
-    fig_line = go.Figure()
-    fig_line.add_trace(go.Scatter(
-        x=mw_range,
-        y=yields,
-        mode="lines",
-        line=dict(color="#10b981", width=3),
-        name="Distillate Yield"
+            'threshold': {
+                'line': {'color': "yellow", 'width': 3},
+                'thickness': 0.75,
+                'value': coolant_temp
+            }
+        }
     ))
-    fig_line.add_vline(
-        x=it_capacity,
-        line_dash="dash",
-        line_color="#ef4444",
-        annotation_text=f"Current: {it_capacity:.1f} MW"
-    )
-    fig_line.update_layout(
-        height=340,
+    fig_temp.update_layout(height=260, margin=dict(l=20, r=20, t=30, b=10), paper_bgcolor="rgba(0,0,0,0)", font={'color': "white"})
+    st.plotly_chart(fig_temp, use_container_width=True)
+
+with g2:
+    # Thermal Energy Input Gauge
+    fig_mw = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=it_capacity,
+        title={'text': "Captured IT Heat (MW)", 'font': {'size': 16, 'color': '#94a3b8'}},
+        gauge={
+            'axis': {'range': [0, 50], 'tickcolor': "white"},
+            'bar': {'color': "#818cf8"},
+            'steps': [
+                {'range': [0, 15], 'color': "rgba(99, 102, 241, 0.15)"},
+                {'range': [15, 35], 'color': "rgba(99, 102, 241, 0.3)"},
+                {'range': [35, 50], 'color': "rgba(99, 102, 241, 0.5)"}
+            ]
+        }
+    ))
+    fig_mw.update_layout(height=260, margin=dict(l=20, r=20, t=30, b=10), paper_bgcolor="rgba(0,0,0,0)", font={'color': "white"})
+    st.plotly_chart(fig_mw, use_container_width=True)
+
+with g3:
+    # Visual Water Reservoir Tank
+    tank_fill = min(daily_yield_liters / 1_000_000.0 * 100, 100.0)
+    fig_tank = go.Figure()
+    fig_tank.add_trace(go.Bar(
+        x=["Storage Buffer"],
+        y=[daily_yield_liters],
+        marker=dict(
+            color='#0284c7',
+            line=dict(color='#38bdf8', width=2)
+        ),
+        width=0.35,
+        text=[f"🌊 {daily_yield_liters:,.0f} L"],
+        textposition="inside",
+        insidetextanchor="middle",
+        textfont=dict(size=16, color="white", family="Arial Black")
+    ))
+    fig_tank.update_layout(
+        height=260,
         margin=dict(l=10, r=10, t=30, b=10),
-        xaxis_title="Data Center IT Load (MW)",
-        yaxis_title="Water Production (Liters / Day)",
+        yaxis=dict(range=[0, 1_000_000], title="Daily Production Volume (Liters)", color="#94a3b8"),
+        xaxis=dict(showticklabels=False),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)"
     )
-    st.plotly_chart(fig_line, use_container_width=True)
+    st.plotly_chart(fig_tank, use_container_width=True)
 
-with tab3:
+st.write("---")
+
+# ----------------- VISUAL REAL-WORLD IMPACT (ICON INFOGRAPHICS) -----------------
+st.markdown("### 🌍 Real-World Impact (What this actually means)")
+
+m1, m2, m3, m4 = st.columns(4)
+
+with m1:
+    st.markdown(f"""
+    <div class="infocard">
+        <div style="font-size: 38px;">👥</div>
+        <b style="font-size: 20px; color: #38bdf8;">{people_supplied:,}</b><br>
+        <span style="color: #94a3b8; font-size: 13px;">People Provided Drinking Water Daily</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+with m2:
+    st.markdown(f"""
+    <div class="infocard">
+        <div style="font-size: 38px;">🍾</div>
+        <b style="font-size: 20px; color: #34d399;">{bottles_per_min:,} / min</b><br>
+        <span style="color: #94a3b8; font-size: 13px;">Equivalent 500ml Water Bottles Produced</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+with m3:
+    st.markdown(f"""
+    <div class="infocard">
+        <div style="font-size: 38px;">🏊‍♂️</div>
+        <b style="font-size: 20px; color: #818cf8;">{(daily_yield_liters * 365) / 2_500_000:.1f} Pools</b><br>
+        <span style="color: #94a3b8; font-size: 13px;">Olympic Swimming Pools Filled Annually</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+with m4:
+    st.markdown(f"""
+    <div class="infocard">
+        <div style="font-size: 38px;">💰</div>
+        <b style="font-size: 20px; color: #facc15;">${water_savings_usd:,.0f}</b><br>
+        <span style="color: #94a3b8; font-size: 13px;">Saved Every Year in Municipal Water Bills</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.write("---")
+
+# ----------------- INTERACTIVE BENCHMARKING -----------------
+st.markdown("### 📊 Why ThermAqua Beats Traditional Methods")
+
+b1, b2 = st.columns([1.2, 1])
+
+with b1:
+    fig_comp = go.Figure()
+    fig_comp.add_trace(go.Bar(
+        x=["ThermAqua (Our Model)", "Reverse Osmosis (RO)", "Thermal Distillation (MSF)"],
+        y=[sec_val, 3.5, 4.0],
+        marker_color=["#10b981", "#f97316", "#ef4444"],
+        text=[f"{sec_val:.2f} kWh/m³", "3.5 kWh/m³", "4.0 kWh/m³"],
+        textposition="outside",
+        textfont=dict(color="white")
+    ))
+    fig_comp.update_layout(
+        title="Electricity Required to Make 1,000 Liters (Lower is Better)",
+        title_font=dict(color="#cbd5e1", size=14),
+        height=300,
+        margin=dict(l=10, r=10, t=40, b=10),
+        yaxis=dict(title="Electricity Used (kWh/m³)", color="#94a3b8", range=[0, 5]),
+        xaxis=dict(color="#94a3b8"),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)"
+    )
+    st.plotly_chart(fig_comp, use_container_width=True)
+
+with b2:
     st.markdown("""
-    #### Membrane & Skid Hardware Specs:
-    * **Membrane Material:** Hydrophobic Microporous PTFE (Polytetrafluoroethylene) with Polypropylene scrim backing.
-    * **Nominal Pore Diameter:** 0.2 µm – 0.45 µm (liquid entry pressure > 2.5 bar).
-    * **Module Geometry:** High-density Hollow Fiber module assembly (>1,000 m²/m³ packing density).
-    * **Working Driving Force:** Transmembrane water vapor pressure gradient driven by sub-boiling temperature differential ($\Delta T \approx 40^\circ\text{C}$).
-    """)
+    <div style="background:#0f172a; border-radius:12px; padding:22px; border:1px solid #1e293b; height: 100%;">
+        <h4 style="color:#38bdf8; margin-top:0;">💡 The Big Picture:</h4>
+        <ul style="color:#cbd5e1; line-height: 1.7; font-size:14px; margin-bottom:0;">
+            <li><b>Zero Burned Fuel:</b> Uses 100% free server exhaust heat instead of coal or gas boilers.</li>
+            <li><b>No High-Pressure Jamming:</b> RO plants force salt water through membranes at 70 times atmospheric pressure. ThermAqua operates at gentle atmospheric pressure.</li>
+            <li><b>No Filter Clogging:</b> Can easily handle salty brine water at <b>70,000+ ppm</b> without membrane rupture.</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
